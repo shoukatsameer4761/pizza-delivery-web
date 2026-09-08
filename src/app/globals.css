@@ -7,6 +7,7 @@
   .dark { --background: 240 6% 4%; --foreground: 0 0% 93%; --card: 240 6% 9%; --card-foreground: 0 0% 93%; --primary: 348 77% 50%; --primary-foreground: 0 0% 100%; --primary-container: 343 100% 36%; --secondary: 240 5% 74%; --secondary-foreground: 240 6% 4%; --muted: 240 5% 12%; --muted-foreground: 240 5% 68%; --border: 240 5% 16%; --input: 240 5% 16%; --ring: 348 77% 50%; --destructive: 0 70% 56%; --success: 158 64% 50%; --warning: 38 92% 60%; --info: 213 94% 68%; --surface-lowest: 240 6% 10%; --surface-low: 240 5% 8%; --surface: 240 5% 10%; --surface-high: 240 5% 13%; --surface-highest: 240 5% 16%; --outline: 240 5% 48%; --outline-variant: 240 5% 20%; --shadow-soft: 0 4px 14px rgb(0 0 0 / 0.28); }
   * { @apply border-border; }
   body { @apply bg-background text-foreground antialiased; }
+  input[type="checkbox"], input[type="radio"] { accent-color: hsl(var(--primary)); }
   button, input { transition-duration: var(--motion-fast); }
   @keyframes splash-progress { from { transform: translateX(-60px); } to { transform: translateX(240px); } }
 }

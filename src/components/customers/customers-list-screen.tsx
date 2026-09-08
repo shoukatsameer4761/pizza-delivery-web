@@ -609,7 +609,7 @@ export function CustomersListScreen() {
                             Edit Customer
                           </button>
                           <Link
-                            href={`/orders?customer=${encodeURIComponent(customer.name)}`}
+                            href={`/customers/${customer.id.replace("#CUST-", "")}/orders`}
                             className="flex items-center gap-2 px-3 py-1.5 text-xs hover:bg-surface-low"
                           >
                             <Receipt className="h-3.5 w-3.5" />

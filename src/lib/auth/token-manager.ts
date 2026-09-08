@@ -1,2 +1,10 @@
 let accessToken: string | null = null;
-export const tokenManager = { get: () => accessToken, set: (token: string) => { accessToken = token; }, clear: () => { accessToken = null; } };
+export const tokenManager = {
+  get: () => accessToken,
+  set: (token: string) => {
+    accessToken = token;
+  },
+  clear: () => {
+    accessToken = null;
+  },
+};
