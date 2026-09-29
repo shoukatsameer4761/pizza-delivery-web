@@ -289,6 +289,21 @@ export function PlatformRestaurants() {
                                     : "ACTIVE",
                               }),
                           },
+                          {
+                            label: "Delete",
+                            destructive: true,
+                            dividerBefore: true,
+                            disabled: mutations.archive.isPending,
+                            onSelect: () => {
+                              if (
+                                window.confirm(
+                                  `Archive ${restaurant.name}? It will be removed from active operations but retained for audit and order history.`,
+                                )
+                              ) {
+                                mutations.archive.mutate(restaurant.id);
+                              }
+                            },
+                          },
                         ]}
                       />
                     </td>

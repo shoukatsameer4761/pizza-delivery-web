@@ -31,4 +31,7 @@ export const restaurantsApi = {
         { status },
       )
     ).data.data,
+  archive: async (id: string) =>
+    (await apiClient.delete<ApiSuccess<Restaurant>>(`/restaurants/${id}`)).data
+      .data,
 };
