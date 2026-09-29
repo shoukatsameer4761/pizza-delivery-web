@@ -1,5 +1,10 @@
-import { CreateCategoryForm } from "@/components/categories/category-forms";
+import { CategoryApiForm } from "@/components/categories/category-api-form";
 
-export default function EditCategoryPage() {
-  return <CreateCategoryForm />;
+export default async function EditCategoryPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  return <CategoryApiForm id={id} />;
 }

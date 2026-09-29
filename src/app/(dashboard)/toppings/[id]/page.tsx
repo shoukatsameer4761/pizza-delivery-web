@@ -1,4 +1,4 @@
-import { ToppingDetails } from "@/components/toppings/topping-screens";
+import { ToppingApiDetails } from "@/components/toppings/topping-api-screens";
 
 export default async function ToppingDetailsPage({
   params,
@@ -6,5 +6,5 @@ export default async function ToppingDetailsPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  return <ToppingDetails id={id} />;
+  return <ToppingApiDetails id={id} />;
 }

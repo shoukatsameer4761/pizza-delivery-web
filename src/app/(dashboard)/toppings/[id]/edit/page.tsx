@@ -1,5 +1,10 @@
-import { ToppingForm } from "@/components/toppings/topping-screens";
+import { ToppingApiForm } from "@/components/toppings/topping-api-screens";
 
-export default function EditToppingPage() {
-  return <ToppingForm edit />;
+export default async function EditToppingPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  return <ToppingApiForm id={id} />;
 }

@@ -1,5 +1,5 @@
-import { ToppingForm } from "@/components/toppings/topping-screens";
+import { ToppingApiForm } from "@/components/toppings/topping-api-screens";
 
 export default function CreateToppingPage() {
-  return <ToppingForm />;
+  return <ToppingApiForm />;
 }

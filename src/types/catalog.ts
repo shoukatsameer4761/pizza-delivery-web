@@ -1,5 +1,7 @@
 export type CategoryStatus = "ACTIVE" | "INACTIVE";
 export type MenuItemStatus = "ACTIVE" | "UNAVAILABLE" | "DRAFT";
+export type ToppingStatus = "ACTIVE" | "INACTIVE";
+export type ToppingType = "TOPPING" | "EXTRA";
 
 export type Category = {
   id: string;
@@ -12,6 +14,7 @@ export type Category = {
   itemCount: number;
   createdAt: string;
   updatedAt: string;
+  items?: Array<{ id: string; name: string; status: MenuItemStatus }>;
 };
 
 export type MenuSize = {
@@ -53,6 +56,24 @@ export type MenuItem = {
   category?: { id: string; name: string };
 };
 
+export type Topping = {
+  id: string;
+  restaurantId: string;
+  name: string;
+  description: string | null;
+  type: ToppingType;
+  status: ToppingStatus;
+  priceMinor: number;
+  currency: string;
+  isRequired: boolean;
+  maxQuantity: number;
+  displayOrder: number;
+  menuItemCount: number;
+  category: { id: string; name: string } | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type CatalogPage<T> = {
   items: T[];
   summary: Record<string, number>;
@@ -80,3 +101,15 @@ export type MenuItemInput = Omit<
   | "sizes"
   | "category"
 > & { sizes: MenuSizeInput[] };
+export type ToppingInput = Pick<
+  Topping,
+  | "name"
+  | "description"
+  | "type"
+  | "status"
+  | "priceMinor"
+  | "currency"
+  | "isRequired"
+  | "maxQuantity"
+  | "displayOrder"
+>;

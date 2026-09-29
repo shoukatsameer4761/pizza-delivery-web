@@ -7,6 +7,8 @@ import type {
   CategoryStatus,
   MenuItemInput,
   MenuItemStatus,
+  ToppingInput,
+  ToppingStatus,
 } from "@/types/catalog";
 
 export function useCategories(
@@ -146,6 +148,56 @@ export function useMenuMutations(restaurantId: string | null) {
       mutationFn: (id: string) =>
         catalogApi.deleteMenuItem(restaurantId as string, id),
       ...options,
+    }),
+  };
+}
+
+export function useToppings(
+  restaurantId: string | null,
+  params: Parameters<typeof catalogApi.listToppings>[1],
+) {
+  return useQuery({
+    queryKey: ["toppings", restaurantId, params],
+    queryFn: () => catalogApi.listToppings(restaurantId as string, params),
+    enabled: Boolean(restaurantId),
+  });
+}
+
+export function useTopping(restaurantId: string | null, toppingId: string) {
+  return useQuery({
+    queryKey: ["topping", restaurantId, toppingId],
+    queryFn: () => catalogApi.getTopping(restaurantId as string, toppingId),
+    enabled: Boolean(restaurantId && toppingId),
+  });
+}
+
+export function useToppingMutations(restaurantId: string | null) {
+  const queryClient = useQueryClient();
+  const invalidate = () => {
+    void queryClient.invalidateQueries({
+      queryKey: ["toppings", restaurantId],
+    });
+  };
+  return {
+    create: useMutation({
+      mutationFn: (body: ToppingInput) =>
+        catalogApi.createTopping(restaurantId as string, body),
+      onSuccess: invalidate,
+    }),
+    update: useMutation({
+      mutationFn: ({ id, body }: { id: string; body: Partial<ToppingInput> }) =>
+        catalogApi.updateTopping(restaurantId as string, id, body),
+      onSuccess: invalidate,
+    }),
+    status: useMutation({
+      mutationFn: ({ id, status }: { id: string; status: ToppingStatus }) =>
+        catalogApi.setToppingStatus(restaurantId as string, id, status),
+      onSuccess: invalidate,
+    }),
+    remove: useMutation({
+      mutationFn: (id: string) =>
+        catalogApi.deleteTopping(restaurantId as string, id),
+      onSuccess: invalidate,
     }),
   };
 }

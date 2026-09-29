@@ -18,10 +18,11 @@ export function useDashboardOverview(
     queryFn: () => dashboardApi.overview(params),
   });
 }
-export function useRestaurants(params: RestaurantListParams) {
+export function useRestaurants(params: RestaurantListParams, enabled = true) {
   return useQuery({
     queryKey: ["restaurants", params],
     queryFn: () => restaurantsApi.list(params),
+    enabled,
   });
 }
 export function useRestaurant(id: string) {

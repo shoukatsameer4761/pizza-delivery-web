@@ -1,5 +1,5 @@
-import { MenuForm } from "@/components/menus/menu-screens";
+import { MenuApiForm } from "@/components/menus/menu-api-form";
 
 export default function CreateMenuPage() {
-  return <MenuForm />;
+  return <MenuApiForm />;
 }
