@@ -1,46 +1,82 @@
 "use client";
-
-import Link from "next/link";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { restaurantsApi } from "@/lib/api/restaurants";
 import { ApiError } from "@/lib/api/client";
 import { useRestaurant } from "@/hooks/use-platform";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import type { CreateRestaurantRequest } from "@/types/restaurants";
 
 type FormValues = Required<CreateRestaurantRequest>;
-const defaults: FormValues = {
-  name: "",
-  slug: "",
-  cuisine: "Pizza & Italian",
-  phone: "",
-  email: "",
-  supportContact: "",
-  address: "",
-  city: "",
-  postalCode: "",
-  currency: "PKR",
-  taxRate: 16,
-  deliveryRadius: 8,
-  autoAccept: true,
-};
+const sections = [
+  {
+    number: "1",
+    title: "Basic Information",
+    description: "General identifiers and cuisine classification",
+  },
+  {
+    number: "2",
+    title: "Contact & Operations",
+    description: "Primary communication channels for management",
+  },
+  {
+    number: "3",
+    title: "Location & Address",
+    description: "Physical establishment coordinates for mapping & delivery",
+  },
+  {
+    number: "4",
+    title: "Operational Configuration",
+    description: "Financials, delivery parameters, and fulfillment logic",
+  },
+];
 function Field({
   label,
   children,
+  wide = false,
 }: {
   label: string;
   children: React.ReactNode;
+  wide?: boolean;
 }) {
   return (
-    <label className="grid gap-1.5 text-sm font-medium">
-      <span>{label}</span>
+    <label className={wide ? "space-y-1 md:col-span-2" : "space-y-1"}>
+      <span className="type-label-caps block text-muted-foreground">
+        {label}
+      </span>
       {children}
     </label>
   );
 }
+function Section({
+  number,
+  title,
+  description,
+  children,
+}: {
+  number: string;
+  title: string;
+  description: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="rounded-[var(--radius-lg)] border bg-surface-lowest p-5">
+      <div className="mb-5 flex items-center gap-3 border-b pb-4">
+        <span className="flex h-8 w-8 items-center justify-center rounded-[var(--radius)] bg-primary/10 text-sm font-bold text-primary">
+          {number}
+        </span>
+        <div>
+          <h2 className="type-card-title">{title}</h2>
+          <p className="text-body-sm text-muted-foreground">{description}</p>
+        </div>
+      </div>
+      {children}
+    </section>
+  );
+}
+
 export function RestaurantForm({ restaurantId }: { restaurantId?: string }) {
   const router = useRouter();
   const existing = useRestaurant(restaurantId ?? "");
@@ -49,7 +85,23 @@ export function RestaurantForm({ restaurantId }: { restaurantId?: string }) {
     handleSubmit,
     reset,
     formState: { isSubmitting },
-  } = useForm<FormValues>({ defaultValues: defaults });
+  } = useForm<FormValues>({
+    defaultValues: {
+      name: "",
+      slug: "",
+      cuisine: "Pizza & Italian",
+      phone: "",
+      email: "",
+      supportContact: "",
+      address: "",
+      city: "",
+      postalCode: "",
+      currency: "PKR",
+      taxRate: 16,
+      deliveryRadius: 8,
+      autoAccept: true,
+    },
+  });
   useEffect(() => {
     if (!existing.data) return;
     reset({
@@ -91,109 +143,151 @@ export function RestaurantForm({ restaurantId }: { restaurantId?: string }) {
     );
   return (
     <form
-      id="restaurant-form"
+      id="create-restaurant-form"
       className="space-y-6"
       onSubmit={handleSubmit(submit)}
     >
-      <section className="rounded-lg border bg-surface-lowest p-5">
-        <h2 className="mb-4 text-lg font-bold">Basic information</h2>
+      <Section {...sections[0]}>
         <div className="grid gap-4 md:grid-cols-2">
-          <Field label="Restaurant name">
+          <Field label="Restaurant Name" wide>
             <Input
               {...register("name", { required: true })}
-              placeholder="Northside Gourmet Pizza"
+              placeholder="e.g. Northside Gourmet Pizza"
+              required
             />
           </Field>
-          <Field label="Slug">
-            <Input
-              {...register("slug", {
-                required: true,
-                pattern: /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
-              })}
-              placeholder="northside-pizza"
-            />
+          <Field label="Slug / Handle">
+            <div className="flex h-10 items-center rounded-[var(--radius)] border bg-surface-low">
+              <span className="pl-3 text-xs text-muted-foreground">
+                prokitchen.io/
+              </span>
+              <input
+                className="min-w-0 flex-1 bg-transparent px-2 text-sm outline-none"
+                {...register("slug", {
+                  required: true,
+                  pattern: /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+                })}
+                placeholder="northside-pizza"
+                required
+              />
+            </div>
           </Field>
-          <Field label="Cuisine">
-            <Input {...register("cuisine", { required: true })} />
-          </Field>
-          <Field label="Currency">
+          <Field label="Cuisine Type">
             <select
-              className="h-10 rounded border bg-surface-lowest px-3"
-              {...register("currency")}
+              className="h-10 w-full rounded-[var(--radius)] border bg-surface-lowest px-3 text-sm"
+              {...register("cuisine", { required: true })}
             >
-              <option value="PKR">PKR</option>
-              <option value="USD">USD</option>
-              <option value="EUR">EUR</option>
-              <option value="GBP">GBP</option>
+              <option>Pizza & Italian</option>
+              <option>Fast Casual</option>
+              <option>Bakery & Cafe</option>
+              <option>Desi & Traditional</option>
+              <option>Asian Fusion</option>
             </select>
           </Field>
         </div>
-      </section>
-      <section className="rounded-lg border bg-surface-lowest p-5">
-        <h2 className="mb-4 text-lg font-bold">Contact and location</h2>
-        <div className="grid gap-4 md:grid-cols-2">
-          <Field label="Phone">
-            <Input {...register("phone", { required: true })} />
+      </Section>
+      <Section {...sections[1]}>
+        <div className="grid gap-4 md:grid-cols-3">
+          <Field label="Primary Phone Number">
+            <Input
+              {...register("phone", { required: true })}
+              type="tel"
+              placeholder="+92 300 1234567"
+              required
+            />
           </Field>
-          <Field label="Email">
-            <Input type="email" {...register("email", { required: true })} />
+          <Field label="Business Email">
+            <Input
+              {...register("email", { required: true })}
+              type="email"
+              placeholder="orders@northside.com"
+              required
+            />
           </Field>
-          <Field label="Support contact">
-            <Input {...register("supportContact")} />
-          </Field>
-          <Field label="Postal code">
-            <Input {...register("postalCode", { required: true })} />
-          </Field>
-          <Field label="Address">
-            <Input {...register("address", { required: true })} />
-          </Field>
-          <Field label="City">
-            <Input {...register("city", { required: true })} />
+          <Field label="Support Contact Name">
+            <Input {...register("supportContact")} placeholder="Ali Khan" />
           </Field>
         </div>
-      </section>
-      <section className="rounded-lg border bg-surface-lowest p-5">
-        <h2 className="mb-4 text-lg font-bold">Operations</h2>
+      </Section>
+      <Section {...sections[2]}>
         <div className="grid gap-4 md:grid-cols-3">
-          <Field label="Tax rate (%)">
+          <Field label="Street Address" wide>
             <Input
-              type="number"
-              step="0.1"
+              {...register("address", { required: true })}
+              placeholder="Shop 4, Commercial Sector C, Main Boulevard"
+              required
+            />
+          </Field>
+          <Field label="City / Area" wide>
+            <Input
+              {...register("city", { required: true })}
+              placeholder="Lahore, DHA Phase 6"
+              required
+            />
+          </Field>
+          <Field label="Postal Code">
+            <Input
+              {...register("postalCode", { required: true })}
+              placeholder="54000"
+              required
+            />
+          </Field>
+        </div>
+      </Section>
+      <Section {...sections[3]}>
+        <div className="grid gap-4 md:grid-cols-3">
+          <Field label="Currency">
+            <select
+              className="h-10 w-full rounded-[var(--radius)] border bg-surface-lowest px-3 text-sm"
+              {...register("currency")}
+            >
+              <option value="PKR">PKR - Pakistani Rupee (Rs.)</option>
+              <option value="USD">USD - US Dollar ($)</option>
+              <option value="EUR">EUR - Euro (€)</option>
+              <option value="GBP">GBP - Pound Sterling (£)</option>
+            </select>
+          </Field>
+          <Field label="Tax Rate (%)">
+            <Input
               {...register("taxRate", {
                 valueAsNumber: true,
                 min: 0,
                 max: 100,
               })}
-            />
-          </Field>
-          <Field label="Delivery radius (km)">
-            <Input
               type="number"
               step="0.1"
-              {...register("deliveryRadius", { valueAsNumber: true, min: 0 })}
             />
           </Field>
-          <label className="flex items-center gap-2 pt-7 text-sm font-medium">
-            <input type="checkbox" {...register("autoAccept")} /> Auto-accept
-            orders
-          </label>
+          <Field label="Default Delivery Radius (km)">
+            <Input
+              {...register("deliveryRadius", { valueAsNumber: true, min: 0 })}
+              type="number"
+            />
+          </Field>
         </div>
-      </section>
-      <div className="flex justify-end gap-3">
-        <Link
-          href={restaurantId ? `/restaurants/${restaurantId}` : "/restaurants"}
-          className="inline-flex h-10 items-center rounded border px-4 text-sm font-semibold"
-        >
-          Cancel
-        </Link>
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting
-            ? "Saving…"
-            : restaurantId
-              ? "Save changes"
-              : "Create restaurant"}
-        </Button>
-      </div>
+        <label className="mt-5 flex items-center justify-between rounded-[var(--radius)] border bg-surface-low p-4">
+          <span>
+            <span className="block text-sm font-semibold">
+              Order Auto-Accept
+            </span>
+            <span className="text-body-sm text-muted-foreground">
+              Automatically accept incoming orders when kitchen load is normal.
+            </span>
+          </span>
+          <input
+            type="checkbox"
+            className="h-5 w-5 rounded-[var(--radius-sm)] text-primary focus:ring-primary"
+            {...register("autoAccept")}
+          />
+        </label>
+      </Section>
+      {restaurantId && (
+        <div className="flex justify-end gap-3">
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Saving…" : "Save changes"}
+          </Button>
+        </div>
+      )}
     </form>
   );
 }
