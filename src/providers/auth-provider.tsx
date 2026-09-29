@@ -33,7 +33,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const result = await authApi.refresh();
       tokenManager.set(result.accessToken);
-      setUser(result.user);
+      const currentUser = await authApi.me();
+      setUser(currentUser);
       return result.accessToken;
     } catch {
       tokenManager.clear();
@@ -72,16 +73,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAuthenticated: Boolean(user),
       isLoading,
       login: async (input) => {
-        const result = await authApi.login(input);
-        tokenManager.set(result.accessToken);
-        let currentUser = result.user;
         try {
-          currentUser = await authApi.me();
-        } catch {
-          // Keep the successful login if profile hydration is temporarily unavailable.
+          const result = await authApi.login(input);
+          tokenManager.set(result.accessToken);
+          const currentUser = await authApi.me();
+          setUser(currentUser);
+          router.push(getRoleHomePath(currentUser));
+        } catch (error) {
+          tokenManager.clear();
+          setUser(null);
+          throw error;
         }
-        setUser(currentUser);
-        router.push(getRoleHomePath(currentUser));
       },
       logout: async () => {
         try {

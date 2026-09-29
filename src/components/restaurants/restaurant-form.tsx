@@ -8,6 +8,7 @@ import { restaurantsApi } from "@/lib/api/restaurants";
 import { ApiError } from "@/lib/api/client";
 import { useRestaurant } from "@/hooks/use-platform";
 import type { CreateRestaurantRequest } from "@/types/restaurants";
+import { PageLoading } from "@/components/shared/states";
 
 type FormValues = Required<CreateRestaurantRequest>;
 const sections = [
@@ -134,7 +135,7 @@ export function RestaurantForm({ restaurantId }: { restaurantId?: string }) {
     }
   };
   if (restaurantId && existing.isLoading)
-    return <p className="text-sm text-muted-foreground">Loading restaurant…</p>;
+    return <PageLoading label="Loading restaurant" />;
   if (restaurantId && existing.isError)
     return (
       <p className="text-sm text-destructive">

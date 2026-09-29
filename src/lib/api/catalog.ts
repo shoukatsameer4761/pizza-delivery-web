@@ -8,6 +8,10 @@ import type {
   MenuItem,
   MenuItemInput,
   MenuItemStatus,
+  Topping,
+  ToppingInput,
+  ToppingStatus,
+  ToppingType,
 } from "@/types/catalog";
 
 const restaurantPath = (restaurantId: string, resource: string) =>
@@ -150,6 +154,64 @@ export const catalogApi = {
   deleteMenuItem: async (restaurantId: string, menuItemId: string) => {
     await apiClient.delete(
       restaurantPath(restaurantId, `menu-items/${menuItemId}`),
+    );
+  },
+  listToppings: async (
+    restaurantId: string,
+    params: {
+      page: number;
+      pageSize: number;
+      search?: string;
+      status?: ToppingStatus;
+      type?: ToppingType;
+      sort?: string;
+      direction?: string;
+    },
+  ) =>
+    (
+      await apiClient.get<ApiSuccess<CatalogPage<Topping>>>(
+        restaurantPath(restaurantId, "toppings"),
+        { params },
+      )
+    ).data.data,
+  getTopping: async (restaurantId: string, toppingId: string) =>
+    (
+      await apiClient.get<ApiSuccess<Topping>>(
+        restaurantPath(restaurantId, `toppings/${toppingId}`),
+      )
+    ).data.data,
+  createTopping: async (restaurantId: string, body: ToppingInput) =>
+    (
+      await apiClient.post<ApiSuccess<Topping>>(
+        restaurantPath(restaurantId, "toppings"),
+        body,
+      )
+    ).data.data,
+  updateTopping: async (
+    restaurantId: string,
+    toppingId: string,
+    body: Partial<ToppingInput>,
+  ) =>
+    (
+      await apiClient.patch<ApiSuccess<Topping>>(
+        restaurantPath(restaurantId, `toppings/${toppingId}`),
+        body,
+      )
+    ).data.data,
+  setToppingStatus: async (
+    restaurantId: string,
+    toppingId: string,
+    status: ToppingStatus,
+  ) =>
+    (
+      await apiClient.patch<ApiSuccess<Topping>>(
+        restaurantPath(restaurantId, `toppings/${toppingId}/status`),
+        { status },
+      )
+    ).data.data,
+  deleteTopping: async (restaurantId: string, toppingId: string) => {
+    await apiClient.delete(
+      restaurantPath(restaurantId, `toppings/${toppingId}`),
     );
   },
 };

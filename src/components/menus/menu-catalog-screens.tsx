@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 
 import { RowActionsMenu } from "@/components/shared/row-actions-menu";
+import { Pagination } from "@/components/shared/pagination";
 import { ErrorState, PageLoading } from "@/components/shared/states";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -25,8 +26,10 @@ import {
   useMenuItem,
   useMenuItems,
   useMenuMutations,
+  useCategories,
 } from "@/hooks/use-catalog";
 import { useRestaurant } from "@/providers/restaurant-provider";
+import { useAuth } from "@/providers/auth-provider";
 import type { MenuItem as ApiMenuItem, MenuItemStatus } from "@/types/catalog";
 
 type Status = "Active" | "Unavailable" | "Draft";
@@ -64,22 +67,47 @@ function Crumbs({ current }: { current: string }) {
 }
 
 export function MenuCatalogList() {
-  const { selectedRestaurantId } = useRestaurant();
+  const { selectedRestaurantId, isLoading: restaurantLoading } =
+    useRestaurant();
+  const { isLoading: authLoading } = useAuth();
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("all");
+  const [categoryId, setCategoryId] = useState("");
+  const [sort, setSort] = useState("popular");
+  const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<MenuRecord | null>(null);
-  const menuQuery = useMenuItems(selectedRestaurantId, {
+  const categoriesQuery = useCategories(selectedRestaurantId, {
     page: 1,
+    pageSize: 100,
+    sort: "displayOrder",
+    direction: "asc",
+  });
+  const menuQuery = useMenuItems(selectedRestaurantId, {
+    page,
     pageSize: 20,
     search: query || undefined,
+    categoryId: categoryId || undefined,
     status:
       status === "all" ? undefined : (status.toUpperCase() as MenuItemStatus),
-    sort: "popular",
-    direction: "desc",
+    sort,
+    direction: sort === "name" || sort === "price" ? "asc" : "desc",
   });
   const mutations = useMenuMutations(selectedRestaurantId);
   const items = (menuQuery.data?.items ?? []).map(toMenuRecord);
-  if (menuQuery.isLoading) return <PageLoading />;
+  const summary = menuQuery.data?.summary ?? {
+    total: 0,
+    active: 0,
+    unavailable: 0,
+    draft: 0,
+  };
+  if (authLoading || restaurantLoading)
+    return <PageLoading label="Loading restaurant catalog" />;
+  if (!selectedRestaurantId)
+    return (
+      <ErrorState message="No restaurant is available for this account." />
+    );
+  if (menuQuery.isPending || menuQuery.isLoading || categoriesQuery.isPending)
+    return <PageLoading label="Loading menu" />;
   if (menuQuery.isError)
     return (
       <ErrorState message="Unable to load menu items. Please try again." />
@@ -107,28 +135,28 @@ export function MenuCatalogList() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Stat
             label="Total Pizzas"
-            value="24"
-            detail="↗ +2 this month"
+            value={String(summary.total)}
+            detail="Live catalog total"
             icon={Pizza}
             tone="text-primary"
           />
           <Stat
             label="Active"
-            value="21"
-            detail="✓ 87.5% of total"
+            value={String(summary.active)}
+            detail="Currently available"
             icon={CheckCircle2}
             tone="text-tertiary"
           />
           <Stat
             label="Unavailable"
-            value="2"
-            detail="⚠ Out of stock ingredients"
+            value={String(summary.unavailable)}
+            detail="Temporarily unavailable"
             icon={PauseCircle}
             tone="text-error"
           />
           <Stat
             label="Draft"
-            value="1"
+            value={String(summary.draft)}
             detail="Hidden from menu"
             icon={Edit3}
             tone="text-secondary"
@@ -147,18 +175,27 @@ export function MenuCatalogList() {
             </div>
             <div className="grid w-full gap-2 sm:grid-cols-3 lg:w-auto">
               <select
+                value={categoryId}
+                onChange={(event) => {
+                  setCategoryId(event.target.value);
+                  setPage(1);
+                }}
                 className="h-10 rounded-[var(--radius)] border bg-surface-lowest px-3 text-sm"
                 aria-label="Filter by category"
               >
-                <option>All Categories</option>
-                <option>Classic Pizzas</option>
-                <option>Gourmet & Special</option>
-                <option>Vegetarian</option>
-                <option>Spicy & Hot</option>
+                <option value="">All Categories</option>
+                {(categoriesQuery.data?.items ?? []).map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
               </select>
               <select
                 value={status}
-                onChange={(event) => setStatus(event.target.value)}
+                onChange={(event) => {
+                  setStatus(event.target.value);
+                  setPage(1);
+                }}
                 className="h-10 rounded-[var(--radius)] border bg-surface-lowest px-3 text-sm"
                 aria-label="Filter by status"
               >
@@ -168,13 +205,18 @@ export function MenuCatalogList() {
                 <option value="draft">Draft</option>
               </select>
               <select
+                value={sort}
+                onChange={(event) => {
+                  setSort(event.target.value);
+                  setPage(1);
+                }}
                 className="h-10 rounded-[var(--radius)] border bg-surface-lowest px-3 text-sm"
                 aria-label="Sort menu items"
               >
-                <option>Sort: Most Popular</option>
-                <option>Sort: Name (A-Z)</option>
-                <option>Sort: Price (Low to High)</option>
-                <option>Sort: Recently Updated</option>
+                <option value="popular">Sort: Most Popular</option>
+                <option value="name">Sort: Name (A-Z)</option>
+                <option value="price">Sort: Price (Low to High)</option>
+                <option value="updatedAt">Sort: Recently Updated</option>
               </select>
             </div>
           </div>
@@ -288,45 +330,14 @@ export function MenuCatalogList() {
               </tbody>
             </table>
           </div>
-          <div className="flex flex-col gap-3 border-t bg-surface-low px-6 py-4 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-            <span>
-              Page <strong className="text-foreground">1</strong> of{" "}
-              <strong className="text-foreground">4</strong>
-            </span>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                disabled
-                className="rounded border border-outline-variant px-3 py-1.5 opacity-50"
-              >
-                Previous
-              </button>
-              <button
-                type="button"
-                className="rounded bg-primary px-3 py-1.5 font-medium text-white"
-              >
-                1
-              </button>
-              <button
-                type="button"
-                className="rounded border border-outline-variant px-3 py-1.5 hover:bg-surface-container"
-              >
-                2
-              </button>
-              <button
-                type="button"
-                className="rounded border border-outline-variant px-3 py-1.5 hover:bg-surface-container"
-              >
-                3
-              </button>
-              <button
-                type="button"
-                className="rounded border border-outline-variant px-3 py-1.5 hover:bg-surface-container"
-              >
-                Next
-              </button>
-            </div>
-          </div>
+          <Pagination
+            page={menuQuery.data?.pagination.page ?? page}
+            totalPages={menuQuery.data?.pagination.totalPages ?? 1}
+            totalItems={menuQuery.data?.pagination.totalItems ?? 0}
+            pageSize={menuQuery.data?.pagination.pageSize ?? 20}
+            itemLabel="pizzas"
+            onPageChange={setPage}
+          />
         </Card>
       </div>
       {selected && (

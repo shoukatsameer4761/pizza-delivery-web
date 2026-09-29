@@ -28,13 +28,16 @@ import {
   useCategoryMutations,
 } from "@/hooks/use-catalog";
 import { useRestaurant } from "@/providers/restaurant-provider";
+import { useAuth } from "@/providers/auth-provider";
 import type { Category } from "@/types/catalog";
 import { cn } from "@/lib/utils/cn";
 
 const icons = [Pizza, Utensils, CupSoda, CakeSlice];
 
 export function CategoryApiList() {
-  const { selectedRestaurantId } = useRestaurant();
+  const { selectedRestaurantId, isLoading: restaurantLoading } =
+    useRestaurant();
+  const { isLoading: authLoading } = useAuth();
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
   const [page, setPage] = useState(1);
@@ -51,7 +54,14 @@ export function CategoryApiList() {
     direction: "asc",
   });
   const mutations = useCategoryMutations(selectedRestaurantId);
-  if (query.isLoading) return <PageLoading />;
+  if (authLoading || restaurantLoading)
+    return <PageLoading label="Loading restaurant catalog" />;
+  if (!selectedRestaurantId)
+    return (
+      <ErrorState message="No restaurant is available for this account." />
+    );
+  if (query.isPending || query.isLoading)
+    return <PageLoading label="Loading categories" />;
   if (query.isError)
     return (
       <ErrorState message="Unable to load categories. Please try again." />

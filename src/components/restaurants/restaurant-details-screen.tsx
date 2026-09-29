@@ -23,7 +23,11 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
-import { ErrorState, PageLoading } from "@/components/shared/states";
+import {
+  ErrorState,
+  InlineLoading,
+  PageLoading,
+} from "@/components/shared/states";
 import { Card } from "@/components/ui/card";
 import { useDashboardOverview, useRestaurant } from "@/hooks/use-platform";
 import { useRestaurant as useRestaurantContext } from "@/providers/restaurant-provider";
@@ -410,7 +414,7 @@ export function RestaurantDetailsScreen({ id }: RestaurantDetailsScreenProps) {
               </Link>
             </div>
             {overviewQuery.isLoading ? (
-              <p className="text-sm text-muted-foreground">Loading activity…</p>
+              <InlineLoading label="Loading activity" />
             ) : overview?.recentActivity.length ? (
               <div className="space-y-3">
                 {overview.recentActivity.slice(0, 4).map((activity) => (

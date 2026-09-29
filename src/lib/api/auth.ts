@@ -19,17 +19,23 @@ const normalizeUser = (
     context?.permissions ?? user.permissions ?? [];
   const restaurants =
     context?.restaurants ??
+    context?.memberships?.map((membership) => ({
+      id: membership.restaurantId,
+      name: membership.restaurantName,
+    })) ??
     user.memberships?.map((membership) => ({
       id: membership.restaurantId,
       name: membership.restaurantName,
     })) ??
     [];
-  const memberships: RestaurantMembership[] = restaurants.map((restaurant) => ({
-    restaurantId: restaurant.id,
-    restaurantName: restaurant.name,
-    role: user.role,
-    permissions,
-  }));
+  const memberships: RestaurantMembership[] =
+    context?.memberships ??
+    restaurants.map((restaurant) => ({
+      restaurantId: restaurant.id,
+      restaurantName: restaurant.name,
+      role: user.role,
+      permissions,
+    }));
   return {
     ...user,
     firstName,

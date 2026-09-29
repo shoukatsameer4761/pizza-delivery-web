@@ -48,6 +48,7 @@ export type MePayload = {
   user: User;
   restaurants?: Array<{ id: string; name: string }>;
   permissions?: Permission[];
+  memberships?: RestaurantMembership[];
 };
 export type MeResponse =
   User | MePayload | { success: true; data: User | MePayload };

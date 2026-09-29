@@ -1,5 +1,5 @@
-import { CreateCategoryForm } from "@/components/categories/category-forms";
+import { CategoryApiForm } from "@/components/categories/category-api-form";
 
 export default function CreateCategoryPage() {
-  return <CreateCategoryForm />;
+  return <CategoryApiForm />;
 }
