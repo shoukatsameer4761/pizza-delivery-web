@@ -39,6 +39,13 @@ export function useRestaurantMutations() {
         restaurantsApi.updateStatus(id, status),
       onSuccess: () => client.invalidateQueries({ queryKey: ["restaurants"] }),
     }),
+    archive: useMutation({
+      mutationFn: (id: string) => restaurantsApi.archive(id),
+      onSuccess: (_restaurant, id) => {
+        client.removeQueries({ queryKey: ["restaurant", id] });
+        return client.invalidateQueries({ queryKey: ["restaurants"] });
+      },
+    }),
   };
 }
 export function useAdministrations(params: AdministratorListParams) {
